@@ -1,0 +1,7 @@
+repository_name,repository_owner,num_branches,num_contributors,num_collaborators,has_ci_cd,dependencies,readme_length,num_commits,num_pull_requests,detected_frameworks,total_dependencies,has_web_framework,has_database,has_docker,has_tests,lang_Vue,lang_JavaScript,lang_HTML,service_None,readme_azure,readme_bank,readme_code,readme_configure,readme_environment,readme_file,readme_frontend,readme_github,readme_https,readme_install,readme_json,readme_mode,readme_node,readme_nodejs,readme_service,readme_variables,readme_visualstudio,readme_vscode,readme_vuejs,readme_with,framework_package.json,complexity_score
+ie-bank-fe-2024,alguadam,2,2,0,0,"In package.json: {
+  ""name"": ""frontend"",
+  ""version"": ""0.1.0"",
+  ""private"": true,
+  ""scripts"": {
+    ""serve"": ""vue-cl...",6660,0,0,package.json,1,False,False,False,False,True,True,True,True,0.15719425975540718,0.22456322822201027,0.2694758738664123,0.17965058257760821,0.15719425975540718,0.17965058257760821,0.17965058257760821,0.22456322822201027,0.4266701336218195,0.31438851951081437,0.20210690539980924,0.29193219668861337,0.2470195510442113,0.15719425975540718,0.2470195510442113,0.20210690539980924,0.13473793693320615,0.13473793693320615,0.15719425975540718,0.15719425975540718,True,0.004
