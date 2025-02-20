@@ -1,0 +1,234 @@
+{
+    "0": {
+        "branches": {
+            "branch_name": "main",
+            "commit_sha": "04573e36cbff0023f496bf794d524db14922f0f0"
+        },
+        "cicd_services": {
+            "file": ".github/workflows/ie-bank-frontend.yml",
+            "services_detected": "Azure"
+        },
+        "cicd_workflows": {
+            "workflow_file": "ie-bank-frontend.yml",
+            "path": ".github/workflows/ie-bank-frontend.yml"
+        },
+        "contributors": {
+            "login": "alguadam",
+            "contributions": "8"
+        },
+        "dependencies": {
+            "dependencies_info": "In package.json: {\n  \"name\": \"frontend\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"serve\": \"vue-cl..."
+        },
+        "frameworks": {
+            "framework_file": "package.json"
+        },
+        "readme": {
+            "readme": "# IE Bank frontend\n\n- [IE Bank frontend](#ie-bank-frontend)\n  - [Overview](#overview)\n  - [Requirements](#requirements)\n  - [Recommended tutorials](#recommended-tutorials)\n  - [Configure your local environment](#configure-your-local-environment)\n    - [Install Prerequisites](#install-prerequisites)\n    - [Install node dependencies](#install-node-dependencies)\n  - [Run and debug the backend locally](#run-and-debug-the-backend-locally)\n  - [Configuration variables](#configuration-variables)\n  - [Continuos Delivery](#continuos-delivery)\n    - [GitHub secrets](#github-secrets)\n\n\n## Overview\n\nThis is the repository for the frontend code of the IE Bank web app\n\n![IE Bank app logical view](images/ie-bank-app.png)\n\n## Requirements\n\nThis source code works under the following technologies:\n- [Node v18.17.1](https://nodejs.org/en/download)\n- [npm 9.6.7 (comes with Node)](https://www.npmjs.com/package/npm)\n\n## Recommended tutorials\n- [HTML](https://www.w3schools.com/html/)\n- [CSS](https://www.w3schools.com/css/default.asp)\n- [JavaScript](https://www.w3schools.com/js/default.asp)\n- [Node.js](https://www.w3schools.com/nodejs/default.asp)\n- [Vue.js](https://www.w3schools.com/vue/index.php)\n- [Node.js in VS Code](https://code.visualstudio.com/docs/nodejs/nodejs-tutorial)\n- [Using Vue in VS Code](https://code.visualstudio.com/docs/nodejs/vuejs-tutorial)\n\n## Configure your local environment\n\n### Install Prerequisites\n\n- **Install Node.js**. Install Node.js from [here](https://nodejs.org/en/download). Make sure to select the option to add Node to your PATH while installing.\n- **Install VSCode**. Install VSCode from [here](https://code.visualstudio.com/download).\n- **Install Vetur VSCode extension**. Install the Vetur VSCode extension from [here](https://marketplace.visualstudio.com/items?itemName=octref.vetur).\n\n### Install node dependencies\n\n> Learn more: [Using Vue in Visual Studio Code](https://code.visualstudio.com/docs/nodejs/vuejs-tutorial)\n\n1. **Install node dependencies**. Open a terminal and run the following command on the root folder of this project:\n\n```bash\n$ npm install\n```\n\nThis will create a `node_modules` folder with all the dependencies needed to run the application configured in the `package.json` file.\n\n## Run and debug the backend locally\n\n> Learn more: [Vue.js debugging in Chrome and VS Code](https://github.com/microsoft/vscode-recipes/tree/main/vuejs-cli#configure-launchjson-file)\n\n1. **Configure the `launch.json` file**. Click on the Debugging icon in the Activity Bar to bring up the Debug view. Then click on the gear icon to configure a `launch.json` file, selecting Chrome for the environment:\n\n![Configure launch.json on VS Code](https://github.com/microsoft/vscode-recipes/raw/main/vuejs-cli/config_add.png)\n\n2. **Configure the `launch.json` file**. Replace content of the generated `launch.json` with the following configurations:\n\n```json\n{\n  \"version\": \"0.2.0\",\n  \"configurations\": [\n    {\n      \"type\": \"chrome\",\n      \"request\": \"launch\",\n      \"name\": \"IE Bank Frontend\",\n      \"url\": \"http://localhost:8080\",\n      \"webRoot\": \"${workspaceFolder}\",\n      \"breakOnLoad\": true,\n      \"pathMapping\": {\n        \"/_karma_webpack_\": \"${workspaceFolder}\"\n      },\n      \"sourceMapPathOverrides\": {\n        \"webpack:/*\": \"${webRoot}/*\",\n        \"/./*\": \"${webRoot}/*\",\n        \"/src/*\": \"${webRoot}/*\",\n        \"/*\": \"*\",\n        \"/./~/*\": \"${webRoot}/node_modules/*\"\n      },\n      \"preLaunchTask\": \"vuejs: start\"\n    }\n  ]\n}\n```\n\n2. Add the following `npm` tasks to you  `tasks.json` file:\n\n```json\n{\n  \"version\": \"2.0.0\",\n  \"tasks\": [\n    {\n      \"label\": \"vuejs: start\",\n      \"type\": \"npm\",\n      \"script\": \"serve\",\n      \"isBackground\": true,\n      \"problemMatcher\": [\n        {\n          \"base\": \"$tsc-watch\",\n          \"background\": {\n            \"activeOnStart\": true,\n            \"beginsPattern\": \"Starting development server\",\n            \"endsPattern\": \"Compiled successfully\"\n          }\n        }\n      ]\n    }\n  ]\n}\n```\n\n3. **Start debugging**. Set a [breakpoint](https://code.visualstudio.com/docs/editor/debugging#_breakpoints) anywhere in the [`src\\components\\AppAccounts.vue`](src\\components\\AppAccounts.vue) file. Go to the Debug view, select the 'IE Bank Frontend' configuration, then press F5 or click the green play button. Your breakpoint should now be hit as the new instance of Chrome opens\n\n## Configuration variables\n\n> Learn more: [Modes and Environment Variables](https://cli.vuejs.org/guide/mode-and-env.html)\n\n**Mode** is an important concept in Vue CLI projects. By default, there are three modes:\n- `development` is used by `vue-cli-service serve`\n- `test` is used by `vue-cli-service test:unit`\n- `production` is used by `vue-cli-service build` and `vue-cli-service test:e2e`\n\nWhen running `vue-cli-service`, environment variables are loaded from all corresponding files. If they don't contain a `NODE_ENV` variable, it will be set accordingly (`NODE_ENV` will be set to `\"production\"` in production mode, `\"test\"` in test mode, and defaults to `\"development\"` otherwise).\n\nYou can specify env variables by placing the following files in your project root:\n\n```shell\n.env                # loaded in all cases\n.env.local          # loaded in all cases, ignored by git\n.env.[mode]         # only loaded in specified mode\n.env.[mode].local   # only loaded in specified mode, ignored by git\n```\nIt is possible to define the mode to use at build time by using the `--mode` option. For example, to build for uat mode:\n\n- `vue-cli-service build --mode uat` builds a production app in uat mode, using `.env`, `.env.uat` and `.env.uat.local` if they are present\n\nThe environment variables are specified in this project root:\n- [`.env.development`](.env.development)\n\nOnly `NODE_ENV`, `BASE_URL`, and variables that start with `VUE_APP_` will be statically embedded into the client bundle, so do not use variables with other naming convention.\n\n## Continuos Delivery\n\n> Learn more: \n> - [Vue Deployment on App Service Linux](https://azureossd.github.io/2022/02/11/Vue-Deployment-on-App-Service-Linux/)\n\nThe file [`.github/workflows/ie-bank-frontend.yml`](.github\\workflows\\ie-bank-frontend.yml) contains the configuration for the CI/CD pipeline.\n\n### GitHub secrets\n\nThe workflow uses the following GitHub secrets:\n\nSecret name | Description | Learn more\n--- | --- | ---\n`AZURE_CREDENTIALS` | Azure credentials to authenticate to Azure via Service Principal | [Use the Azure login action with a service principal secret](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#use-the-azure-login-action-with-a-service-principal-secret)"
+        },
+        "repository_contents": {
+            "name": ".env.development",
+            "path": ".env.development",
+            "type": "file"
+        },
+        "repo_details": {
+            "repository_name": "ie-bank-fe-2024",
+            "repository_owner": "alguadam",
+            "languages_used": "Vue, JavaScript, HTML"
+        },
+        "user_ci_cd_services_summary": {
+            "service": "Azure",
+            "count": "97"
+        }
+    },
+    "1": {
+        "branches": {
+            "branch_name": "release-1",
+            "commit_sha": "278c52c09579d97678665a107deed9225da87b64"
+        },
+        "contributors": {
+            "login": "julioas09",
+            "contributions": "2"
+        },
+        "repository_contents": {
+            "name": ".github",
+            "path": ".github",
+            "type": "dir"
+        },
+        "user_ci_cd_services_summary": {
+            "service": "AWS",
+            "count": "18"
+        }
+    },
+    "2": {
+        "repository_contents": {
+            "name": "workflows",
+            "path": ".github/workflows",
+            "type": "dir"
+        },
+        "user_ci_cd_services_summary": {
+            "service": "GCP",
+            "count": "0"
+        }
+    },
+    "3": {
+        "repository_contents": {
+            "name": "ie-bank-frontend.yml",
+            "path": ".github/workflows/ie-bank-frontend.yml",
+            "type": "file"
+        }
+    },
+    "4": {
+        "repository_contents": {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "type": "file"
+        }
+    },
+    "5": {
+        "repository_contents": {
+            "name": "README.md",
+            "path": "README.md",
+            "type": "file"
+        }
+    },
+    "6": {
+        "repository_contents": {
+            "name": "babel.config.js",
+            "path": "babel.config.js",
+            "type": "file"
+        }
+    },
+    "7": {
+        "repository_contents": {
+            "name": "images",
+            "path": "images",
+            "type": "dir"
+        }
+    },
+    "8": {
+        "repository_contents": {
+            "name": "ie-bank-app.png",
+            "path": "images/ie-bank-app.png",
+            "type": "file"
+        }
+    },
+    "9": {
+        "repository_contents": {
+            "name": "jsconfig.json",
+            "path": "jsconfig.json",
+            "type": "file"
+        }
+    },
+    "10": {
+        "repository_contents": {
+            "name": "package-lock.json",
+            "path": "package-lock.json",
+            "type": "file"
+        }
+    },
+    "11": {
+        "repository_contents": {
+            "name": "package.json",
+            "path": "package.json",
+            "type": "file"
+        }
+    },
+    "12": {
+        "repository_contents": {
+            "name": "public",
+            "path": "public",
+            "type": "dir"
+        }
+    },
+    "13": {
+        "repository_contents": {
+            "name": "favicon.ico",
+            "path": "public/favicon.ico",
+            "type": "file"
+        }
+    },
+    "14": {
+        "repository_contents": {
+            "name": "index.html",
+            "path": "public/index.html",
+            "type": "file"
+        }
+    },
+    "15": {
+        "repository_contents": {
+            "name": "src",
+            "path": "src",
+            "type": "dir"
+        }
+    },
+    "16": {
+        "repository_contents": {
+            "name": "App.vue",
+            "path": "src/App.vue",
+            "type": "file"
+        }
+    },
+    "17": {
+        "repository_contents": {
+            "name": "assets",
+            "path": "src/assets",
+            "type": "dir"
+        }
+    },
+    "18": {
+        "repository_contents": {
+            "name": "logo.png",
+            "path": "src/assets/logo.png",
+            "type": "file"
+        }
+    },
+    "19": {
+        "repository_contents": {
+            "name": "components",
+            "path": "src/components",
+            "type": "dir"
+        }
+    },
+    "20": {
+        "repository_contents": {
+            "name": "AppAccounts.vue",
+            "path": "src/components/AppAccounts.vue",
+            "type": "file"
+        }
+    },
+    "21": {
+        "repository_contents": {
+            "name": "Skull.vue",
+            "path": "src/components/Skull.vue",
+            "type": "file"
+        }
+    },
+    "22": {
+        "repository_contents": {
+            "name": "main.js",
+            "path": "src/main.js",
+            "type": "file"
+        }
+    },
+    "23": {
+        "repository_contents": {
+            "name": "router",
+            "path": "src/router",
+            "type": "dir"
+        }
+    },
+    "24": {
+        "repository_contents": {
+            "name": "index.js",
+            "path": "src/router/index.js",
+            "type": "file"
+        }
+    },
+    "25": {
+        "repository_contents": {
+            "name": "vue.config.js",
+            "path": "vue.config.js",
+            "type": "file"
+        }
+    }
+}
