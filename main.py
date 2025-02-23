@@ -25,12 +25,14 @@ class GitIngestScraper:
 
     def parse_repository_data(self, html):
         soup = BeautifulSoup(html, 'html.parser')
-        directory_structure = soup.find('div', id='directory-structure-container')
+        # Find the hidden input that contains the raw directory structure
+        directory_structure = soup.find('input', {'id': 'directory-structure-content'})
 
         if directory_structure:
-            return directory_structure.decode_contents()
+            # Get the value attribute which contains the properly formatted tree
+            return directory_structure.get('value')
         else:
-            print("Directory structure container not found")
+            print("Directory structure content not found")
             return None
 
     def scrape(self):
@@ -48,6 +50,6 @@ if __name__ == "__main__":
     scraper = GitIngestScraper()
     results = scraper.scrape()
 
-    # Save results to a JSON file
-    with open('gitingest_data.json', 'w') as f:
-        json.dump(results, f, indent=4)
+    # Save results to a JSON file, ensuring proper encoding
+    with open('gitingest_data.json', 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
