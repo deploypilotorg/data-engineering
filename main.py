@@ -56,6 +56,9 @@ if __name__ == "__main__":
     scraper = GitIngestScraper()
     results = scraper.scrape()
 
-    # Save results to a JSON file, ensuring proper encoding
-    with open('gitingest_data.json', 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=4)
+    # Save directory structure and textarea content to separate text files
+    with open('directory_structure.txt', 'w', encoding='utf-8') as f:
+        f.write(results['directory_structure'])
+
+    with open('code_content.txt', 'w', encoding='utf-8') as f:
+        f.write(results['textarea_content'])

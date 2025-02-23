@@ -1,0 +1,49 @@
+Directory structure:
+└── haxybaxy-portfolio/
+    ├── README.md
+    ├── eslint.config.js
+    ├── index.html
+    ├── package.json
+    ├── vite.config.js
+    ├── public/
+    │   ├── icons/
+    │   ├── projectphotos/
+    │   └── propellerhat/
+    │       ├── propellerhat.bin
+    │       ├── propellerhat.glb
+    │       ├── propellerhat.gltf
+    │       └── textures/
+    └── src/
+        ├── App.jsx
+        ├── index.css
+        ├── main.jsx
+        ├── assets/
+        ├── components/
+        │   ├── aboutme.jsx
+        │   ├── carousel.jsx
+        │   ├── experience.jsx
+        │   ├── fadeinsection.jsx
+        │   ├── intro.jsx
+        │   ├── jobData.jsx
+        │   ├── navigation.jsx
+        │   ├── nvim.jsx
+        │   ├── projects.jsx
+        │   ├── projectsData.jsx
+        │   ├── propellerhat.jsx
+        │   ├── tmux.jsx
+        │   ├── verticaltabs.jsx
+        │   └── window.jsx
+        └── styles/
+            ├── aboutme.css
+            ├── app.css
+            ├── carousel.css
+            ├── experience.css
+            ├── fadein.css
+            ├── intro.css
+            ├── navigation.css
+            ├── nvim.css
+            ├── projects.css
+            ├── propellerhat.css
+            ├── tmux.css
+            ├── verticaltabs.css
+            └── window.css
