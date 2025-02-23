@@ -1,21 +1,25 @@
-import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import time
 import json
 
 class GitIngestScraper:
     def __init__(self):
         self.base_url = "https://gitingest.com/haxybaxy/portfolio"
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        # Initialize Chrome driver (you'll need to have chromedriver installed)
+        self.driver = webdriver.Chrome()
 
     def fetch_page(self, url):
         try:
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-            return response.text
-        except requests.RequestException as e:
+            self.driver.get(url)
+            # Wait up to 10 seconds for the element to be present
+            element = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, "directory-structure-container"))
+            )
+            return self.driver.page_source
+        except Exception as e:
             print(f"Error fetching page: {e}")
             return None
 
@@ -24,7 +28,7 @@ class GitIngestScraper:
         directory_structure = soup.find('div', id='directory-structure-container')
 
         if directory_structure:
-            return directory_structure.decode_contents()  # This returns the inner HTML as a string
+            return directory_structure.decode_contents()
         else:
             print("Directory structure container not found")
             return None
@@ -34,6 +38,11 @@ class GitIngestScraper:
         if html:
             return self.parse_repository_data(html)
         return None
+
+    def __del__(self):
+        # Clean up the browser when done
+        if hasattr(self, 'driver'):
+            self.driver.quit()
 
 if __name__ == "__main__":
     scraper = GitIngestScraper()
