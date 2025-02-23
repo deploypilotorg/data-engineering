@@ -8,15 +8,16 @@ import json
 class GitIngestScraper:
     def __init__(self):
         self.base_url = "https://gitingest.com/haxybaxy/portfolio"
-        # Initialize Chrome driver (you'll need to have chromedriver installed)
         self.driver = webdriver.Chrome()
 
     def fetch_page(self, url):
         try:
             self.driver.get(url)
-            # Wait up to 10 seconds for the element to be present
-            element = WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.ID, "directory-structure-container"))
+            )
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, "textarea"))
             )
             return self.driver.page_source
         except Exception as e:
@@ -25,15 +26,20 @@ class GitIngestScraper:
 
     def parse_repository_data(self, html):
         soup = BeautifulSoup(html, 'html.parser')
-        # Find the hidden input that contains the raw directory structure
+        # Get directory structure
         directory_structure = soup.find('input', {'id': 'directory-structure-content'})
+        # Get the second textarea content
+        textarea_content = soup.find_all('textarea')[1]  # Using index 1 to get the second textarea
 
-        if directory_structure:
-            # Get the value attribute which contains the properly formatted tree
-            return directory_structure.get('value')
-        else:
-            print("Directory structure content not found")
-            return None
+        result = {
+            'directory_structure': directory_structure.get('value') if directory_structure else None,
+            'textarea_content': textarea_content.text if textarea_content else None
+        }
+
+        if not directory_structure or not textarea_content:
+            print("Some content was not found")
+
+        return result
 
     def scrape(self):
         html = self.fetch_page(self.base_url)
