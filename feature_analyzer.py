@@ -293,73 +293,106 @@ Return your analysis in this exact JSON format:
 
         return found_features
 
-    def determine_deployment_platform(self, directory_structure, code_content):
-        # Define deployment indicators
-        deployment_indicators = {
+    def determine_deployment_platform(self, directory_structure, code_content, repo):
+        # Direct repo name matches first
+        repo_lower = repo.lower()
+        if "/streamlit" in repo_lower or repo_lower.startswith("streamlit/"):
+            return "Streamlit"
+        
+        content = (directory_structure + "\n" + code_content).lower()
+        
+        # Strong indicators (if found, immediately return)
+        strong_indicators = {
             "Vercel": [
                 "vercel.json",
-                ".vercel",
-                "now.json",
-                "vercel.app",
+                ".vercel/",
+                "vercel deploy",
                 "next.config.js"
-            ],
-            "AWS": [
-                "aws-config",
-                ".aws",
-                "elasticbeanstalk",
-                "cloudformation",
-                "serverless.yml",
-                "amplify"
             ],
             "Firebase": [
                 "firebase.json",
                 ".firebaserc",
-                "firebase-config",
-                "initializeApp",
+                "firebase.initializeApp",
                 "firebase-admin"
             ],
-            "Streamlit": [
-                "streamlit_app",
-                ".streamlit",
-                "import streamlit",
-                "st.write",
-                "streamlit.io"
+            "AWS": [
+                "aws-config",
+                "cloudformation",
+                "elasticbeanstalk",
+                "serverless.yml",
+                "amplify"
             ],
             "GitHub Pages": [
-                "_config.yml",
-                "gh-pages",
-                ".github/pages",
                 "github.io",
-                "CNAME"
+                "gh-pages",
+                "_config.yml"
             ],
             "Netlify": [
                 "netlify.toml",
                 ".netlify",
-                "netlify.app",
-                "netlify-cms",
-                "[build]"
+                "netlify deploy"
+            ],
+            "Digital Ocean": [
+                "digitalocean.yaml",
+                "do:kubernetes",
+                "doctl"
+            ],
+            "Google Cloud": [
+                "app.yaml",
+                "gcloud",
+                "appengine",
+                "cloud.google"
+            ],
+            "NPM": [
+                '"private": false' if "package.json" in content else None
+            ],
+            "Heroku": [
+                "Procfile",
+                "heroku.yml",
+                "heroku deploy"
             ]
         }
 
-        # Check both directory structure and code content for indicators
-        content_to_check = directory_structure + "\n" + code_content
-        
-        # Count matches for each platform
-        platform_matches = {platform: 0 for platform in deployment_indicators}
-        
-        for platform, indicators in deployment_indicators.items():
+        for platform, indicators in strong_indicators.items():
             for indicator in indicators:
-                if indicator.lower() in content_to_check.lower():
-                    platform_matches[platform] += 1
-        
-        # Get platform with most matches
-        if platform_matches:
-            max_matches = max(platform_matches.values())
-            if max_matches > 0:
-                return max(platform_matches.items(), key=lambda x: x[1])[0]
-        
-        return "Unknown"  # Default if no deployment platform is detected
+                if indicator and indicator in content:
+                    return platform
 
+        # If no strong indicators found, check deployment URLs
+        if ".vercel.app" in content or "vercel.com" in content:
+            return "Vercel"
+        if ".firebaseapp.com" in content or ".web.app" in content:
+            return "Firebase"
+        if ".github.io" in content:
+            return "GitHub Pages"
+        if ".netlify.app" in content:
+            return "Netlify"
+        if ".herokuapp.com" in content:
+            return "Heroku"
+        if ".digitalocean.app" in content:
+            return "Digital Ocean"
+        if "appspot.com" in content:
+            return "Google Cloud"
+        if ".aws.amazon.com" in content:
+            return "AWS"
+
+        # Default fallback based on common patterns
+        if "vercel" in content or "next.js" in content:
+            return "Vercel"
+        if "firebase" in content:
+            return "Firebase"
+        if "aws" in content or "amazon" in content:
+            return "AWS"
+        if "netlify" in content:
+            return "Netlify"
+        if "heroku" in content:
+            return "Heroku"
+        if "gcloud" in content or "google cloud" in content:
+            return "Google Cloud"
+        if "digitalocean" in content:
+            return "Digital Ocean"
+
+        return "Unknown"
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser(description='Analyze repository features')

@@ -45,26 +45,29 @@ def analyze_repositories(repo_data, output_dir):
     
     # Initialize CSV headers and analyzer
     infrastructure_features = [
-    "already_deployed",
-    "has_frontend",
-    "has_cicd",
-    "multiple_environments",
-    "uses_containerization",
-    "uses_iac",
-    "high_availability"
+        "already_deployed",
+        "has_frontend",
+        "has_cicd",
+        "multiple_environments",
+        "uses_containerization",
+        "uses_iac",
+        "high_availability"
     ] # Existing features
     code_features = [
-    "uses_microservices",
-    "has_api",
-    "has_database",
-    "has_authentication",
-    "has_monitoring",
-    "has_logging",
-    "has_caching",
-    "has_security_measures",
-    "has_testing",
-    "has_documentation"
-    ]  # Existing features
+        "authentication",
+        "realtime_events",
+        "storage",
+        "caching",
+        "ai_implementation",
+        "database",
+        "microservices",
+        "monolith",
+        "api_exposed",
+        "message_queues",
+        "background_jobs",
+        "sensitive_data",
+        "external_apis"
+    ] # Existing features
     csv_headers = ["repository", "deployment"] + infrastructure_features + code_features
     
     csv_path = os.path.join(output_dir, "analysis_results.csv")
@@ -85,7 +88,7 @@ def analyze_repositories(repo_data, output_dir):
                     code_content = f.read()
                 
                 # Determine deployment platform
-                deployment = analyzer.determine_deployment_platform(directory_structure, code_content)
+                deployment = analyzer.determine_deployment_platform(directory_structure, code_content, repo)
                 
                 # Create row data with detected deployment
                 row_data = {
