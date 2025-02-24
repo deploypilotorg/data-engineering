@@ -9,51 +9,17 @@ class FeatureAnalyzer:
         # Load environment variables from .env file
         load_dotenv()
 
-        # Debug environment variables
-        print("\n[DEBUG] Checking environment variables:")
-        print(f"Current working directory: {os.getcwd()}")
-        print(f".env file exists: {os.path.exists('.env')}")
-
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            print("[ERROR] OPENAI_API_KEY not found in environment variables!")
-            print("[DEBUG] Environment variables present:", {k: v for k, v in os.environ.items() if 'OPENAI' in k})
             raise ValueError("OPENAI_API_KEY not found in environment variables. Please check your .env file.")
 
-        print("[SUCCESS] OPENAI_API_KEY loaded successfully")
         self.client = openai.OpenAI(api_key=api_key)
 
-        # Original feature patterns (kept for fallback)
-        self.features = {
-            'authentication': {
-                'files': ['auth', 'login', 'signup', 'jwt', 'passport'],
-                'code': ['authenticate', 'authorization', 'jwt', 'token', 'session', 'oauth', 'password'],
-            },
-            'database': {
-                'files': ['db', 'database', 'model', 'schema'],
-                'code': ['mongoose', 'sequelize', 'prisma', 'sql', 'database', 'query'],
-            },
-            'caching': {
-                'files': ['cache', 'redis'],
-                'code': ['cache', 'redis', 'memcached', 'caching'],
-            },
-            'storage': {
-                'files': ['storage', 's3', 'upload'],
-                'code': ['storage', 'aws-sdk', 'cloudinary', 'multer', 'upload'],
-            },
-            'microservices': {
-                'files': ['service', 'api', 'gateway'],
-                'code': ['microservice', 'kafka', 'rabbitmq', 'message queue', 'grpc'],
-            }
-        }
-
-        # Add cache for API responses
-        self.analysis_cache = {}
-
         # Configure analysis settings
-        self.max_tokens = 4000  # Maximum tokens per API call
-        self.model = "gpt-3.5-turbo"  # Use cheaper model
-        self.chunk_size = 12000  # Characters per chunk
+        self.max_tokens = 4000
+        self.model = "gpt-3.5-turbo"
+        self.chunk_size = 12000
+        self.analysis_cache = {}
 
     def chunk_code_by_files(self, code_content: str) -> List[str]:
         """Split code content into chunks based on file headers and size limits."""
@@ -153,14 +119,13 @@ Return your analysis in this exact JSON format:
                 raw_response = response.choices[0].message.content
                 print(f"[CHUNK {chunk_num}] Raw API response:\n{raw_response}")
 
-                # Sanitize and validate JSON - remove any potential whitespace or newlines
-                sanitized_response = raw_response.strip().replace('\n', '').replace(' ', '')
-                chunk_analysis = json.loads(sanitized_response)
+                # Parse JSON while preserving details text formatting
+                chunk_analysis = json.loads(raw_response)
 
-                # Normalize JSON keys
+                # Normalize JSON keys only
                 chunk_analysis = {k.strip().lower(): v for k, v in chunk_analysis.items()}
 
-                print(f"[CHUNK {chunk_num}] Sanitized JSON: {json.dumps(chunk_analysis, indent=2)}")
+                print(f"[CHUNK {chunk_num}] Parsed JSON: {json.dumps(chunk_analysis, indent=2)}")
 
                 # Validate feature structure
                 required_features = ['authentication', 'database', 'caching', 'storage', 'microservices']
@@ -270,49 +235,28 @@ Return your analysis in this exact JSON format:
         return found_features
 
 if __name__ == "__main__":
-    print("=== Starting Analysis ===")
-
-    # First test API connectivity
     try:
-        print("\n[TEST] Checking OpenAI API connectivity...")
-        load_dotenv()
-        test_client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        test_client.models.list()
-        print("[TEST] API connection successful!")
-    except Exception as e:
-        print(f"[TEST] API connection failed: {str(e)}")
-        exit(1)
-
-    # Read input files
-    try:
-        print("\n[IO] Reading input files...")
-        with open('directory_structure.txt', 'r', encoding='utf-8') as f:
-            directory_content = f.read()
-            print(f"Read {len(directory_content)} characters from directory_structure.txt")
-
+        # Read code content
         with open('code_content.txt', 'r', encoding='utf-8') as f:
             code_content = f.read()
             print(f"Read {len(code_content)} characters from code_content.txt")
-    except Exception as e:
-        print(f"[IO ERROR] Failed to read files: {str(e)}")
-        exit(1)
 
-    # Run analysis
-    try:
+        # Run analysis
         analyzer = FeatureAnalyzer()
-        results = analyzer.analyze_project(directory_content, code_content)
+        results = analyzer.analyze_with_llm(code_content)
 
-        print("\n=== Final Results ===")
-        for feature, data in results['combined_analysis'].items():
+        print("\n=== Analysis Results ===")
+        for feature, data in results.items():
             status = "✓" if data["present"] else "✗"
             print(f"\n{feature.capitalize()}: {status}")
             if data["present"]:
-                print(f"Details: {data['code_analysis'].get('details', 'No details available')}")
+                print(f"Details: {data['details']}")
 
+        # Save results
         with open('analysis_results.json', 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2)
-            print("\nSaved full results to analysis_results.json")
+            print("\nSaved results to analysis_results.json")
 
     except Exception as e:
-        print(f"[ANALYSIS ERROR] Critical failure: {str(e)}")
+        print(f"[ERROR] {str(e)}")
         exit(1)
