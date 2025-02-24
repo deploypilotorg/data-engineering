@@ -89,11 +89,11 @@ def analyze_repositories(repo_data, output_dir):
 
                 # Add infrastructure features to row
                 for feature in infrastructure_features:
-                    row_data[feature] = "Yes" if dir_results.get(feature, False) else "No"
+                    row_data[feature] = 1 if dir_results.get(feature, False) else 0
 
                 # Add code features to row
                 for feature in code_features:
-                    row_data[feature] = "Yes" if code_results.get(feature, {}).get("present", False) else "No"
+                    row_data[feature] = 1 if code_results.get(feature, {}).get("present", False) else 0
 
                 # Write row to CSV
                 writer.writerow(row_data)
