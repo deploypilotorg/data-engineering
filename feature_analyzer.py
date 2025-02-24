@@ -293,6 +293,73 @@ Return your analysis in this exact JSON format:
 
         return found_features
 
+    def determine_deployment_platform(self, directory_structure, code_content):
+        # Define deployment indicators
+        deployment_indicators = {
+            "Vercel": [
+                "vercel.json",
+                ".vercel",
+                "now.json",
+                "vercel.app",
+                "next.config.js"
+            ],
+            "AWS": [
+                "aws-config",
+                ".aws",
+                "elasticbeanstalk",
+                "cloudformation",
+                "serverless.yml",
+                "amplify"
+            ],
+            "Firebase": [
+                "firebase.json",
+                ".firebaserc",
+                "firebase-config",
+                "initializeApp",
+                "firebase-admin"
+            ],
+            "Streamlit": [
+                "streamlit_app",
+                ".streamlit",
+                "import streamlit",
+                "st.write",
+                "streamlit.io"
+            ],
+            "GitHub Pages": [
+                "_config.yml",
+                "gh-pages",
+                ".github/pages",
+                "github.io",
+                "CNAME"
+            ],
+            "Netlify": [
+                "netlify.toml",
+                ".netlify",
+                "netlify.app",
+                "netlify-cms",
+                "[build]"
+            ]
+        }
+
+        # Check both directory structure and code content for indicators
+        content_to_check = directory_structure + "\n" + code_content
+        
+        # Count matches for each platform
+        platform_matches = {platform: 0 for platform in deployment_indicators}
+        
+        for platform, indicators in deployment_indicators.items():
+            for indicator in indicators:
+                if indicator.lower() in content_to_check.lower():
+                    platform_matches[platform] += 1
+        
+        # Get platform with most matches
+        if platform_matches:
+            max_matches = max(platform_matches.values())
+            if max_matches > 0:
+                return max(platform_matches.items(), key=lambda x: x[1])[0]
+        
+        return "Unknown"  # Default if no deployment platform is detected
+
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser(description='Analyze repository features')

@@ -42,84 +42,88 @@ def scrape_repositories(repo_data, output_dir):
 
 def analyze_repositories(repo_data, output_dir):
     print("\n=== Phase 2: Analyzing Repositories ===")
-
-    # Initialize CSV headers
+    
+    # Initialize CSV headers and analyzer
     infrastructure_features = [
-        "already_deployed", "has_frontend", "has_cicd",
-        "multiple_environments", "uses_containerization",
-        "uses_iac", "high_availability"
-    ]
-
+    "already_deployed",
+    "has_frontend",
+    "has_cicd",
+    "multiple_environments",
+    "uses_containerization",
+    "uses_iac",
+    "high_availability"
+    ] # Existing features
     code_features = [
-        "authentication", "realtime_events", "storage",
-        "caching", "ai_implementation", "database",
-        "microservices", "monolith", "api_exposed",
-        "message_queues", "background_jobs",
-        "sensitive_data", "external_apis"
-    ]
-
+    "uses_microservices",
+    "has_api",
+    "has_database",
+    "has_authentication",
+    "has_monitoring",
+    "has_logging",
+    "has_caching",
+    "has_security_measures",
+    "has_testing",
+    "has_documentation"
+    ]  # Existing features
     csv_headers = ["repository", "deployment"] + infrastructure_features + code_features
-
-    # Create CSV file
+    
     csv_path = os.path.join(output_dir, "analysis_results.csv")
     with open(csv_path, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=csv_headers)
         writer.writeheader()
-
+        
         analyzer = FeatureAnalyzer()
-        for repo, deployment in repo_data:
+        for repo, _ in repo_data:  # Ignore the deployment value from repo_data
             print(f"\nAnalyzing {repo}...")
-            row_data = {
-                "repository": repo,
-                "deployment": deployment
-            }
-
             try:
                 base_filename = os.path.join(output_dir, repo.replace('/', '_'))
-
+                
                 # Read the saved files
                 with open(f'{base_filename}_directory_structure.txt', 'r', encoding='utf-8') as f:
                     directory_structure = f.read()
                 with open(f'{base_filename}_code_content.txt', 'r', encoding='utf-8') as f:
                     code_content = f.read()
-
-                # Analyze repository
+                
+                # Determine deployment platform
+                deployment = analyzer.determine_deployment_platform(directory_structure, code_content)
+                
+                # Create row data with detected deployment
+                row_data = {
+                    "repository": repo,
+                    "deployment": deployment
+                }
+                
+                # Rest of the analysis remains the same
                 dir_results = analyzer.analyze_directory_structure(directory_structure)
                 code_results = analyzer.analyze_with_llm(code_content)
-
-                # Add infrastructure features to row
+                
+                # Add features to row
                 for feature in infrastructure_features:
                     row_data[feature] = 1 if dir_results.get(feature, False) else 0
-
-                # Add code features to row
+                
                 for feature in code_features:
                     row_data[feature] = 1 if code_results.get(feature, {}).get("present", False) else 0
-
-                # Write row to CSV
+                
                 writer.writerow(row_data)
-                print(f"Added analysis results for {repo}")
-
+                print(f"Added analysis results for {repo} (Detected deployment: {deployment})")
+                
             except Exception as e:
                 print(f"Error analyzing {repo}: {str(e)}")
                 continue
-
+    
     return csv_path
 
 def process_repositories(input_file):
-    # Create temp directory if it doesn't exist
     output_dir = "temp"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Read repositories and deployment info from file
+    # Read only repository names from file
     repo_data = []
     with open(input_file, 'r') as f:
         for line in f:
             if line.strip():
-                parts = line.strip().split('|')
-                if len(parts) == 2:
-                    repo = parts[0].strip()
-                    deployment = parts[1].strip()
-                    repo_data.append((repo, deployment))
+                repo = line.strip().split('|')[0].strip()
+                repo_data.append((repo, None))  # Initialize deployment as None
 
     # Phase 1: Scrape all repositories
     successful_repos = scrape_repositories(repo_data, output_dir)
