@@ -4,10 +4,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import json
+import sys
+import argparse
 
 class GitIngestScraper:
-    def __init__(self):
-        self.base_url = "https://gitingest.com/IsraelChidera/focus-app/"
+    def __init__(self, owner_repo):
+        self.base_url = f"https://gitingest.com/{owner_repo}"
         self.driver = webdriver.Chrome()
         # Add a list of file extensions to skip
         self.skip_extensions = ['.css', '.map', '.svg', '.ico', '.gltf']
@@ -83,14 +85,43 @@ class GitIngestScraper:
         return '\n'.join(filtered_lines)
 
 if __name__ == "__main__":
-    scraper = GitIngestScraper()
-    results = scraper.scrape()
+    parser = argparse.ArgumentParser(description='Scrape repository data from GitIngest')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('repo', nargs='?', help='Single repository in format owner/repo')
+    group.add_argument('-f', '--file', help='File containing owner/repo entries, one per line')
 
-    # Save directory structure
-    with open('directory_structure.txt', 'w', encoding='utf-8') as f:
-        f.write(results['directory_structure'])
+    args = parser.parse_args()
 
-    # Save filtered code content
-    with open('code_content.txt', 'w', encoding='utf-8') as f:
-        filtered_content = scraper.filter_css_content(results['textarea_content'])
-        f.write(filtered_content)
+    if args.file:
+        # Read repositories from file
+        try:
+            with open(args.file, 'r') as f:
+                repos = [line.strip() for line in f if line.strip()]
+        except FileNotFoundError:
+            print(f"Error: File '{args.file}' not found")
+            sys.exit(1)
+    else:
+        repos = [args.repo]
+
+    for repo in repos:
+        print(f"Processing repository: {repo}")
+        scraper = GitIngestScraper(repo)
+        results = scraper.scrape()
+
+        if not results:
+            print(f"Failed to fetch repository data for {repo}")
+            continue
+
+        # Create repo-specific filenames
+        base_filename = repo.replace('/', '_')
+
+        # Save directory structure
+        with open(f'{base_filename}_directory_structure.txt', 'w', encoding='utf-8') as f:
+            f.write(results['directory_structure'])
+
+        # Save filtered code content
+        with open(f'{base_filename}_code_content.txt', 'w', encoding='utf-8') as f:
+            filtered_content = scraper.filter_css_content(results['textarea_content'])
+            f.write(filtered_content)
+
+        print(f"Completed processing {repo}")
