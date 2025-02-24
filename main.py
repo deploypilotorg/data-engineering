@@ -5,11 +5,11 @@ import argparse
 from scraper import GitIngestScraper
 from feature_analyzer import FeatureAnalyzer
 
-def scrape_repositories(repos, output_dir):
+def scrape_repositories(repo_data, output_dir):
     print("\n=== Phase 1: Scraping Repositories ===")
     successful_repos = []
 
-    for repo in repos:
+    for repo, deployment in repo_data:
         print(f"\nScraping {repo}...")
         try:
             scraper = GitIngestScraper(repo)
@@ -27,7 +27,7 @@ def scrape_repositories(repos, output_dir):
                 filtered_content = scraper.filter_css_content(results['textarea_content'])
                 f.write(filtered_content)
 
-            successful_repos.append(repo)
+            successful_repos.append((repo, deployment))
             print(f"Successfully scraped {repo}")
 
         except Exception as e:
@@ -40,7 +40,7 @@ def scrape_repositories(repos, output_dir):
 
     return successful_repos
 
-def analyze_repositories(repos, output_dir):
+def analyze_repositories(repo_data, output_dir):
     print("\n=== Phase 2: Analyzing Repositories ===")
 
     # Initialize CSV headers
@@ -58,7 +58,7 @@ def analyze_repositories(repos, output_dir):
         "sensitive_data", "external_apis"
     ]
 
-    csv_headers = ["repository"] + infrastructure_features + code_features
+    csv_headers = ["repository", "deployment"] + infrastructure_features + code_features
 
     # Create CSV file
     csv_path = os.path.join(output_dir, "analysis_results.csv")
@@ -67,9 +67,12 @@ def analyze_repositories(repos, output_dir):
         writer.writeheader()
 
         analyzer = FeatureAnalyzer()
-        for repo in repos:
+        for repo, deployment in repo_data:
             print(f"\nAnalyzing {repo}...")
-            row_data = {"repository": repo}
+            row_data = {
+                "repository": repo,
+                "deployment": deployment
+            }
 
             try:
                 base_filename = os.path.join(output_dir, repo.replace('/', '_'))
@@ -107,13 +110,20 @@ def process_repositories(input_file):
     output_dir = "temp"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Read repositories from file
+    # Read repositories and deployment info from file
+    repo_data = []
     with open(input_file, 'r') as f:
-        repos = [line.strip() for line in f if line.strip()]
+        for line in f:
+            if line.strip():
+                parts = line.strip().split('|')
+                if len(parts) == 2:
+                    repo = parts[0].strip()
+                    deployment = parts[1].strip()
+                    repo_data.append((repo, deployment))
 
     # Phase 1: Scrape all repositories
-    successful_repos = scrape_repositories(repos, output_dir)
-    print(f"\nSuccessfully scraped {len(successful_repos)} out of {len(repos)} repositories")
+    successful_repos = scrape_repositories(repo_data, output_dir)
+    print(f"\nSuccessfully scraped {len(successful_repos)} out of {len(repo_data)} repositories")
 
     # Phase 2: Analyze all repositories
     if successful_repos:
