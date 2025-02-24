@@ -3,6 +3,8 @@ from typing import Dict, List, Any
 import os
 import json
 from dotenv import load_dotenv
+import sys
+import argparse
 
 class FeatureAnalyzer:
     def __init__(self):
@@ -43,7 +45,6 @@ class FeatureAnalyzer:
             "microservices": {"present": False, "details": [], "improvements": []},
             "monolith": {"present": False, "details": [], "improvements": []},
             "api_exposed": {"present": False, "details": [], "improvements": []},
-            "rate_limiting": {"present": False, "details": [], "improvements": []},
             "message_queues": {"present": False, "details": [], "improvements": []},
             "background_jobs": {"present": False, "details": [], "improvements": []},
             "sensitive_data": {"present": False, "details": [], "improvements": []},
@@ -91,10 +92,18 @@ class FeatureAnalyzer:
 
         combined_analysis = {
             "authentication": {"present": False, "details": []},
-            "database": {"present": False, "details": []},
-            "caching": {"present": False, "details": []},
+            "realtime_events": {"present": False, "details": []},
             "storage": {"present": False, "details": []},
-            "microservices": {"present": False, "details": []}
+            "caching": {"present": False, "details": []},
+            "ai_implementation": {"present": False, "details": []},
+            "database": {"present": False, "details": []},
+            "microservices": {"present": False, "details": []},
+            "monolith": {"present": False, "details": []},
+            "api_exposed": {"present": False, "details": []},
+            "message_queues": {"present": False, "details": []},
+            "background_jobs": {"present": False, "details": []},
+            "sensitive_data": {"present": False, "details": []},
+            "external_apis": {"present": False, "details": []}
         }
 
         prompt = """Analyze the following code snippet and determine if it implements any of these features. For each feature:
@@ -112,7 +121,6 @@ Features to analyze:
 7. Microservices Architecture (service separation)
 8. Monolithic Architecture (single application)
 9. API Endpoints (REST, GraphQL)
-10. Rate Limiting or Monitoring
 11. Message Queues (RabbitMQ, Kafka)
 12. Background Jobs (workers, scheduled tasks)
 13. Sensitive Data Handling (PII, encryption)
@@ -129,7 +137,6 @@ Return your analysis in this exact JSON format:
     "microservices": {"present": false, "details": "", "improvements": ""},
     "monolith": {"present": false, "details": "", "improvements": ""},
     "api_exposed": {"present": false, "details": "", "improvements": ""},
-    "rate_limiting": {"present": false, "details": "", "improvements": ""},
     "message_queues": {"present": false, "details": "", "improvements": ""},
     "background_jobs": {"present": false, "details": "", "improvements": ""},
     "sensitive_data": {"present": false, "details": "", "improvements": ""},
@@ -288,13 +295,31 @@ Return your analysis in this exact JSON format:
 
 if __name__ == "__main__":
     try:
+        parser = argparse.ArgumentParser(description='Analyze repository features')
+        parser.add_argument('repo', help='Repository in format owner/repo')
+        args = parser.parse_args()
+
+        # Convert repo name to file format and construct paths
+        base_filename = args.repo.replace('/', '_')
+        temp_dir = "temp"
+        directory_file = os.path.join(temp_dir, f"{base_filename}_directory_structure.txt")
+        code_file = os.path.join(temp_dir, f"{base_filename}_code_content.txt")
+
+        # Check if files exist
+        if not os.path.exists(directory_file):
+            print(f"Error: Directory structure file not found: {directory_file}")
+            sys.exit(1)
+        if not os.path.exists(code_file):
+            print(f"Error: Code content file not found: {code_file}")
+            sys.exit(1)
+
         # Read directory structure
-        with open('directory_structure.txt', 'r', encoding='utf-8') as f:
+        with open(directory_file, 'r', encoding='utf-8') as f:
             directory_content = f.read()
             print(f"Read directory structure ({len(directory_content)} characters)")
 
         # Read code content
-        with open('code_content.txt', 'r', encoding='utf-8') as f:
+        with open(code_file, 'r', encoding='utf-8') as f:
             code_content = f.read()
             print(f"Read code content ({len(code_content)} characters)")
 
@@ -308,6 +333,12 @@ if __name__ == "__main__":
             "infrastructure_analysis": dir_results,
             "code_analysis": code_results
         }
+
+        # Save results in temp directory
+        results_file = os.path.join(temp_dir, f"{base_filename}_analysis_results.json")
+        with open(results_file, 'w', encoding='utf-8') as f:
+            json.dump(combined_results, f, indent=2)
+            print(f"\nSaved results to {results_file}")
 
         print("\n=== Analysis Results ===")
         print("\nInfrastructure Features:")
@@ -323,11 +354,6 @@ if __name__ == "__main__":
                 print(f"Details: {data['details']}")
             if data.get("improvements"):
                 print(f"Suggested Improvements: {data['improvements']}")
-
-        # Save results
-        with open('analysis_results.json', 'w', encoding='utf-8') as f:
-            json.dump(combined_results, f, indent=2)
-            print("\nSaved results to analysis_results.json")
 
     except Exception as e:
         print(f"[ERROR] {str(e)}")
