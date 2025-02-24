@@ -1,49 +1,51 @@
 Directory structure:
-└── haxybaxy-portfolio/
+└── israelchidera-focus-app/
     ├── README.md
-    ├── eslint.config.js
     ├── index.html
     ├── package.json
+    ├── postcss.config.js
+    ├── tailwind.config.js
     ├── vite.config.js
     ├── public/
-    │   ├── icons/
-    │   ├── projectphotos/
-    │   └── propellerhat/
-    │       ├── propellerhat.bin
-    │       ├── propellerhat.glb
-    │       ├── propellerhat.gltf
-    │       └── textures/
+    │   ├── _redirects
+    │   ├── manifest.json
+    │   └── robots.txt
     └── src/
+        ├── App.css
         ├── App.jsx
+        ├── firebase.js
         ├── index.css
-        ├── main.jsx
-        ├── assets/
+        ├── index.jsx
+        ├── Api/
+        │   └── index.jsx
         ├── components/
-        │   ├── aboutme.jsx
-        │   ├── carousel.jsx
-        │   ├── experience.jsx
-        │   ├── fadeinsection.jsx
-        │   ├── intro.jsx
-        │   ├── jobData.jsx
-        │   ├── navigation.jsx
-        │   ├── nvim.jsx
-        │   ├── projects.jsx
-        │   ├── projectsData.jsx
-        │   ├── propellerhat.jsx
-        │   ├── tmux.jsx
-        │   ├── verticaltabs.jsx
-        │   └── window.jsx
-        └── styles/
-            ├── aboutme.css
-            ├── app.css
-            ├── carousel.css
-            ├── experience.css
-            ├── fadein.css
-            ├── intro.css
-            ├── navigation.css
-            ├── nvim.css
-            ├── projects.css
-            ├── propellerhat.css
-            ├── tmux.css
-            ├── verticaltabs.css
-            └── window.css
+        │   ├── assets/
+        │   ├── elements/
+        │   │   ├── Button/
+        │   │   │   └── index.jsx
+        │   │   ├── Card/
+        │   │   │   └── index.jsx
+        │   │   ├── Container/
+        │   │   │   └── index.jsx
+        │   │   └── Text/
+        │   │       └── index.jsx
+        │   └── widgets/
+        │       ├── Layout.jsx
+        │       ├── Navbar.jsx
+        │       ├── Pomodoro.jsx
+        │       ├── ProtectedRoute.jsx
+        │       ├── Settings.jsx
+        │       ├── Sidebar.jsx
+        │       └── Time.jsx
+        ├── page/
+        │   ├── Home.jsx
+        │   ├── Login.jsx
+        │   ├── NotFound.jsx
+        │   ├── NoteDetail.jsx
+        │   ├── Notes.jsx
+        │   └── Signup.jsx
+        └── store/
+            ├── index.js
+            └── features/
+                ├── noteSlice.js
+                └── userSlice.js

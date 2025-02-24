@@ -7,7 +7,7 @@ import json
 
 class GitIngestScraper:
     def __init__(self):
-        self.base_url = "https://gitingest.com/haxybaxy/portfolio"
+        self.base_url = "https://gitingest.com/IsraelChidera/focus-app/"
         self.driver = webdriver.Chrome()
         # Add a list of file extensions to skip
         self.skip_extensions = ['.css', '.map', '.svg', '.ico', '.gltf']
