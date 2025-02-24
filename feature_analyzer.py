@@ -34,20 +34,20 @@ class FeatureAnalyzer:
 
         # Features to analyze via LLM
         self.llm_features = {
-            "authentication": {"present": False, "details": []},
-            "realtime_events": {"present": False, "details": []},
-            "storage": {"present": False, "details": []},
-            "caching": {"present": False, "details": []},
-            "ai_implementation": {"present": False, "details": []},
-            "database": {"present": False, "details": []},
-            "microservices": {"present": False, "details": []},
-            "monolith": {"present": False, "details": []},
-            "api_exposed": {"present": False, "details": []},
-            "rate_limiting": {"present": False, "details": []},
-            "message_queues": {"present": False, "details": []},
-            "background_jobs": {"present": False, "details": []},
-            "sensitive_data": {"present": False, "details": []},
-            "external_apis": {"present": False, "details": []}
+            "authentication": {"present": False, "details": [], "improvements": []},
+            "realtime_events": {"present": False, "details": [], "improvements": []},
+            "storage": {"present": False, "details": [], "improvements": []},
+            "caching": {"present": False, "details": [], "improvements": []},
+            "ai_implementation": {"present": False, "details": [], "improvements": []},
+            "database": {"present": False, "details": [], "improvements": []},
+            "microservices": {"present": False, "details": [], "improvements": []},
+            "monolith": {"present": False, "details": [], "improvements": []},
+            "api_exposed": {"present": False, "details": [], "improvements": []},
+            "rate_limiting": {"present": False, "details": [], "improvements": []},
+            "message_queues": {"present": False, "details": [], "improvements": []},
+            "background_jobs": {"present": False, "details": [], "improvements": []},
+            "sensitive_data": {"present": False, "details": [], "improvements": []},
+            "external_apis": {"present": False, "details": [], "improvements": []}
         }
 
     def chunk_code_by_files(self, code_content: str) -> List[str]:
@@ -97,7 +97,12 @@ class FeatureAnalyzer:
             "microservices": {"present": False, "details": []}
         }
 
-        prompt = """Analyze the following code snippet and determine if it implements any of these features:
+        prompt = """Analyze the following code snippet and determine if it implements any of these features. For each feature:
+1. Indicate if it's present
+2. Provide details about the implementation if found
+3. Suggest specific improvements or implementations if needed (e.g., "Should implement Redis caching for user sessions" or "Needs S3 bucket for file uploads")
+
+Features to analyze:
 1. Authentication (user login, signup, JWT, sessions)
 2. Realtime Events (websockets, server-sent events)
 3. Storage (file uploads, cloud storage)
@@ -115,20 +120,20 @@ class FeatureAnalyzer:
 
 Return your analysis in this exact JSON format:
 {
-    "authentication": {"present": false, "details": ""},
-    "realtime_events": {"present": false, "details": ""},
-    "storage": {"present": false, "details": ""},
-    "caching": {"present": false, "details": ""},
-    "ai_implementation": {"present": false, "details": ""},
-    "database": {"present": false, "details": ""},
-    "microservices": {"present": false, "details": ""},
-    "monolith": {"present": false, "details": ""},
-    "api_exposed": {"present": false, "details": ""},
-    "rate_limiting": {"present": false, "details": ""},
-    "message_queues": {"present": false, "details": ""},
-    "background_jobs": {"present": false, "details": ""},
-    "sensitive_data": {"present": false, "details": ""},
-    "external_apis": {"present": false, "details": ""}
+    "authentication": {"present": false, "details": "", "improvements": ""},
+    "realtime_events": {"present": false, "details": "", "improvements": ""},
+    "storage": {"present": false, "details": "", "improvements": ""},
+    "caching": {"present": false, "details": "", "improvements": ""},
+    "ai_implementation": {"present": false, "details": "", "improvements": ""},
+    "database": {"present": false, "details": "", "improvements": ""},
+    "microservices": {"present": false, "details": "", "improvements": ""},
+    "monolith": {"present": false, "details": "", "improvements": ""},
+    "api_exposed": {"present": false, "details": "", "improvements": ""},
+    "rate_limiting": {"present": false, "details": "", "improvements": ""},
+    "message_queues": {"present": false, "details": "", "improvements": ""},
+    "background_jobs": {"present": false, "details": "", "improvements": ""},
+    "sensitive_data": {"present": false, "details": "", "improvements": ""},
+    "external_apis": {"present": false, "details": "", "improvements": ""}
 }"""
 
         for chunk_num, chunk in enumerate(code_chunks, 1):
@@ -316,6 +321,8 @@ if __name__ == "__main__":
             print(f"\n{feature.replace('_', ' ').title()}: {status}")
             if data["present"]:
                 print(f"Details: {data['details']}")
+            if data.get("improvements"):
+                print(f"Suggested Improvements: {data['improvements']}")
 
         # Save results
         with open('analysis_results.json', 'w', encoding='utf-8') as f:
