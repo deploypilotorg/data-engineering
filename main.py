@@ -9,6 +9,8 @@ class GitIngestScraper:
     def __init__(self):
         self.base_url = "https://gitingest.com/haxybaxy/portfolio"
         self.driver = webdriver.Chrome()
+        # Add a list of file extensions to skip
+        self.skip_extensions = ['.css', '.map', '.svg', '.ico', '.gltf']
 
     def fetch_page(self, url):
         try:
@@ -52,13 +54,43 @@ class GitIngestScraper:
         if hasattr(self, 'driver'):
             self.driver.quit()
 
+    def filter_css_content(self, content):
+        lines = content.split('\n')
+        filtered_lines = []
+        skip_mode = False
+
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+
+            # Check for header
+            if line.startswith('=' * 48):
+                if i + 1 < len(lines):  # Check if next line exists
+                    file_line = lines[i + 1]
+                    if file_line.startswith('File:'):
+                        # Check if file ends with any of the skip extensions
+                        should_skip = any(file_line.endswith(ext) for ext in self.skip_extensions)
+                        skip_mode = should_skip
+                        # Add the header lines
+                        filtered_lines.append(line)
+                        filtered_lines.append(file_line)
+                        filtered_lines.append(lines[i + 2])  # Add the closing '=' line
+                        i += 2  # Skip the next two lines as we've handled them
+            elif not skip_mode:
+                filtered_lines.append(line)
+            i += 1
+
+        return '\n'.join(filtered_lines)
+
 if __name__ == "__main__":
     scraper = GitIngestScraper()
     results = scraper.scrape()
 
-    # Save directory structure and textarea content to separate text files
+    # Save directory structure
     with open('directory_structure.txt', 'w', encoding='utf-8') as f:
         f.write(results['directory_structure'])
 
+    # Save filtered code content
     with open('code_content.txt', 'w', encoding='utf-8') as f:
-        f.write(results['textarea_content'])
+        filtered_content = scraper.filter_css_content(results['textarea_content'])
+        f.write(filtered_content)
