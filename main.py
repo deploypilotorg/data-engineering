@@ -5,14 +5,43 @@ import argparse
 from scraper import GitIngestScraper
 from feature_analyzer import FeatureAnalyzer
 
-def process_repositories(input_file):
-    # Create temp directory if it doesn't exist
-    output_dir = "temp"
-    os.makedirs(output_dir, exist_ok=True)
+def scrape_repositories(repos, output_dir):
+    print("\n=== Phase 1: Scraping Repositories ===")
+    successful_repos = []
 
-    # Read repositories from file
-    with open(input_file, 'r') as f:
-        repos = [line.strip() for line in f if line.strip()]
+    for repo in repos:
+        print(f"\nScraping {repo}...")
+        try:
+            scraper = GitIngestScraper(repo)
+            results = scraper.scrape()
+
+            if not results:
+                print(f"Failed to fetch data for {repo}")
+                continue
+
+            # Save scraped data
+            base_filename = os.path.join(output_dir, repo.replace('/', '_'))
+            with open(f'{base_filename}_directory_structure.txt', 'w', encoding='utf-8') as f:
+                f.write(results['directory_structure'])
+            with open(f'{base_filename}_code_content.txt', 'w', encoding='utf-8') as f:
+                filtered_content = scraper.filter_css_content(results['textarea_content'])
+                f.write(filtered_content)
+
+            successful_repos.append(repo)
+            print(f"Successfully scraped {repo}")
+
+        except Exception as e:
+            print(f"Error scraping {repo}: {str(e)}")
+            continue
+
+        finally:
+            if 'scraper' in locals():
+                del scraper  # Ensure browser is closed
+
+    return successful_repos
+
+def analyze_repositories(repos, output_dir):
+    print("\n=== Phase 2: Analyzing Repositories ===")
 
     # Initialize CSV headers
     infrastructure_features = [
@@ -37,34 +66,23 @@ def process_repositories(input_file):
         writer = csv.DictWriter(csvfile, fieldnames=csv_headers)
         writer.writeheader()
 
-        # Process each repository
+        analyzer = FeatureAnalyzer()
         for repo in repos:
-            print(f"\n=== Processing {repo} ===")
+            print(f"\nAnalyzing {repo}...")
             row_data = {"repository": repo}
 
             try:
-                # Step 1: Scrape repository
-                print(f"Scraping repository...")
-                scraper = GitIngestScraper(repo)
-                results = scraper.scrape()
-
-                if not results:
-                    print(f"Failed to fetch data for {repo}")
-                    continue
-
-                # Save scraped data
                 base_filename = os.path.join(output_dir, repo.replace('/', '_'))
-                with open(f'{base_filename}_directory_structure.txt', 'w', encoding='utf-8') as f:
-                    f.write(results['directory_structure'])
-                with open(f'{base_filename}_code_content.txt', 'w', encoding='utf-8') as f:
-                    filtered_content = scraper.filter_css_content(results['textarea_content'])
-                    f.write(filtered_content)
 
-                # Step 2: Analyze repository
-                print(f"Analyzing repository...")
-                analyzer = FeatureAnalyzer()
-                dir_results = analyzer.analyze_directory_structure(results['directory_structure'])
-                code_results = analyzer.analyze_with_llm(filtered_content)
+                # Read the saved files
+                with open(f'{base_filename}_directory_structure.txt', 'r', encoding='utf-8') as f:
+                    directory_structure = f.read()
+                with open(f'{base_filename}_code_content.txt', 'r', encoding='utf-8') as f:
+                    code_content = f.read()
+
+                # Analyze repository
+                dir_results = analyzer.analyze_directory_structure(directory_structure)
+                code_results = analyzer.analyze_with_llm(code_content)
 
                 # Add infrastructure features to row
                 for feature in infrastructure_features:
@@ -76,17 +94,33 @@ def process_repositories(input_file):
 
                 # Write row to CSV
                 writer.writerow(row_data)
-                print(f"Added results for {repo} to CSV")
+                print(f"Added analysis results for {repo}")
 
             except Exception as e:
-                print(f"Error processing {repo}: {str(e)}")
+                print(f"Error analyzing {repo}: {str(e)}")
                 continue
 
-            finally:
-                if 'scraper' in locals():
-                    del scraper  # Ensure browser is closed
+    return csv_path
 
-    print(f"\nAnalysis complete! Results saved to {csv_path}")
+def process_repositories(input_file):
+    # Create temp directory if it doesn't exist
+    output_dir = "temp"
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Read repositories from file
+    with open(input_file, 'r') as f:
+        repos = [line.strip() for line in f if line.strip()]
+
+    # Phase 1: Scrape all repositories
+    successful_repos = scrape_repositories(repos, output_dir)
+    print(f"\nSuccessfully scraped {len(successful_repos)} out of {len(repos)} repositories")
+
+    # Phase 2: Analyze all repositories
+    if successful_repos:
+        csv_path = analyze_repositories(successful_repos, output_dir)
+        print(f"\nAnalysis complete! Results saved to {csv_path}")
+    else:
+        print("\nNo repositories were successfully scraped. Analysis cancelled.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Analyze multiple repositories and generate CSV report')
