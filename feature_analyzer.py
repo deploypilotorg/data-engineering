@@ -21,6 +21,35 @@ class FeatureAnalyzer:
         self.chunk_size = 12000
         self.analysis_cache = {}
 
+        # Features to check via directory structure
+        self.directory_features = {
+            "already_deployed": ["docker-compose.yml", "kubernetes", "deploy.sh", ".env.production"],
+            "has_frontend": ["src/frontend", "public", "index.html", "components", "pages"],
+            "has_cicd": [".github/workflows", "jenkins", "gitlab-ci.yml", ".travis.yml"],
+            "multiple_environments": [".env.", "config/environments"],
+            "uses_containerization": ["dockerfile", "docker-compose", "kubernetes"],
+            "uses_iac": ["terraform", "cloudformation", "pulumi", "ansible"],
+            "high_availability": ["kubernetes", "docker-swarm", "load-balancer"],
+        }
+
+        # Features to analyze via LLM
+        self.llm_features = {
+            "authentication": {"present": False, "details": []},
+            "realtime_events": {"present": False, "details": []},
+            "storage": {"present": False, "details": []},
+            "caching": {"present": False, "details": []},
+            "ai_implementation": {"present": False, "details": []},
+            "database": {"present": False, "details": []},
+            "microservices": {"present": False, "details": []},
+            "monolith": {"present": False, "details": []},
+            "api_exposed": {"present": False, "details": []},
+            "rate_limiting": {"present": False, "details": []},
+            "message_queues": {"present": False, "details": []},
+            "background_jobs": {"present": False, "details": []},
+            "sensitive_data": {"present": False, "details": []},
+            "external_apis": {"present": False, "details": []}
+        }
+
     def chunk_code_by_files(self, code_content: str) -> List[str]:
         """Split code content into chunks based on file headers and size limits."""
         print("\n[DEBUG] Chunking code content...")
@@ -69,19 +98,37 @@ class FeatureAnalyzer:
         }
 
         prompt = """Analyze the following code snippet and determine if it implements any of these features:
-1. Authentication (user login, signup, JWT, sessions, etc.)
-2. Database operations (any kind of data persistence)
-3. Caching mechanisms (Redis, in-memory, etc.)
-4. Storage solutions (file uploads, cloud storage, etc.)
-5. Microservices architecture (API gateways, message queues, etc.)
+1. Authentication (user login, signup, JWT, sessions)
+2. Realtime Events (websockets, server-sent events)
+3. Storage (file uploads, cloud storage)
+4. Caching (Redis, in-memory)
+5. AI Implementation (ML models, AI APIs)
+6. Database Operations (any data persistence)
+7. Microservices Architecture (service separation)
+8. Monolithic Architecture (single application)
+9. API Endpoints (REST, GraphQL)
+10. Rate Limiting or Monitoring
+11. Message Queues (RabbitMQ, Kafka)
+12. Background Jobs (workers, scheduled tasks)
+13. Sensitive Data Handling (PII, encryption)
+14. External API Dependencies
 
 Return your analysis in this exact JSON format:
 {
     "authentication": {"present": false, "details": ""},
-    "database": {"present": false, "details": ""},
-    "caching": {"present": false, "details": ""},
+    "realtime_events": {"present": false, "details": ""},
     "storage": {"present": false, "details": ""},
-    "microservices": {"present": false, "details": ""}
+    "caching": {"present": false, "details": ""},
+    "ai_implementation": {"present": false, "details": ""},
+    "database": {"present": false, "details": ""},
+    "microservices": {"present": false, "details": ""},
+    "monolith": {"present": false, "details": ""},
+    "api_exposed": {"present": false, "details": ""},
+    "rate_limiting": {"present": false, "details": ""},
+    "message_queues": {"present": false, "details": ""},
+    "background_jobs": {"present": false, "details": ""},
+    "sensitive_data": {"present": false, "details": ""},
+    "external_apis": {"present": false, "details": ""}
 }"""
 
         for chunk_num, chunk in enumerate(code_chunks, 1):
@@ -204,15 +251,15 @@ Return your analysis in this exact JSON format:
             'combined_analysis': combined_features
         }
 
-    def analyze_directory_structure(self, directory_content):
-        found_features = {feature: False for feature in self.features}
+    def analyze_directory_structure(self, directory_content: str) -> Dict[str, bool]:
+        """Analyze directory structure for infrastructure and deployment patterns."""
+        found_features = {feature: False for feature in self.directory_features}
 
         # Convert to lowercase for case-insensitive matching
         directory_content = directory_content.lower()
 
-        # Check each feature's file patterns
-        for feature, patterns in self.features.items():
-            for pattern in patterns['files']:
+        for feature, patterns in self.directory_features.items():
+            for pattern in patterns:
                 if pattern.lower() in directory_content:
                     found_features[feature] = True
                     break
@@ -236,25 +283,43 @@ Return your analysis in this exact JSON format:
 
 if __name__ == "__main__":
     try:
+        # Read directory structure
+        with open('directory_structure.txt', 'r', encoding='utf-8') as f:
+            directory_content = f.read()
+            print(f"Read directory structure ({len(directory_content)} characters)")
+
         # Read code content
         with open('code_content.txt', 'r', encoding='utf-8') as f:
             code_content = f.read()
-            print(f"Read {len(code_content)} characters from code_content.txt")
+            print(f"Read code content ({len(code_content)} characters)")
 
         # Run analysis
         analyzer = FeatureAnalyzer()
-        results = analyzer.analyze_with_llm(code_content)
+        dir_results = analyzer.analyze_directory_structure(directory_content)
+        code_results = analyzer.analyze_with_llm(code_content)
+
+        # Combine results
+        combined_results = {
+            "infrastructure_analysis": dir_results,
+            "code_analysis": code_results
+        }
 
         print("\n=== Analysis Results ===")
-        for feature, data in results.items():
+        print("\nInfrastructure Features:")
+        for feature, present in dir_results.items():
+            status = "✓" if present else "✗"
+            print(f"{feature.replace('_', ' ').title()}: {status}")
+
+        print("\nCode Features:")
+        for feature, data in code_results.items():
             status = "✓" if data["present"] else "✗"
-            print(f"\n{feature.capitalize()}: {status}")
+            print(f"\n{feature.replace('_', ' ').title()}: {status}")
             if data["present"]:
                 print(f"Details: {data['details']}")
 
         # Save results
         with open('analysis_results.json', 'w', encoding='utf-8') as f:
-            json.dump(results, f, indent=2)
+            json.dump(combined_results, f, indent=2)
             print("\nSaved results to analysis_results.json")
 
     except Exception as e:
