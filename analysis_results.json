@@ -1,22 +1,33 @@
 {
-  "authentication": {
-    "present": true,
-    "details": "Firebase authentication is used for user authentication.\nUser signup functionality with form fields for email, password, and confirm password.\nUser authentication features such as login, signup, and logout are implemented using Firebase authentication.\nUser authentication using Firebase Auth in userSlice.js\nUser authentication is implemented using Firebase authentication library. The code includes user login functionality.\nFirebase authentication using Firebase SDK\nUser authentication using Firebase Auth for signup and login.\nUser authentication using Firebase auth library."
+  "infrastructure_analysis": {
+    "already_deployed": false,
+    "has_frontend": true,
+    "needs_cicd": false,
+    "multiple_environments": false,
+    "uses_containerization": false,
+    "uses_iac": false,
+    "high_availability": false
   },
-  "database": {
-    "present": true,
-    "details": "Firestore database operations are implemented for fetching, updating, and deleting notes data.\nDatabase operations using Firebase Firestore in noteSlice.js\nDatabase operations using Redux store to fetch and manage user notes data.\nDatabase operations using Firebase Firestore for storing and retrieving notes data.\nFirestore database operations using Firebase SDK"
-  },
-  "caching": {
-    "present": false,
-    "details": "Not found"
-  },
-  "storage": {
-    "present": false,
-    "details": "Not found"
-  },
-  "microservices": {
-    "present": false,
-    "details": "Not found"
+  "code_analysis": {
+    "authentication": {
+      "present": true,
+      "details": "Firebase authentication is implemented using Firebase SDK.\nUser login functionality using Firebase authentication.\nUser authentication is implemented using Firebase authentication in userSlice.js.\nUser signup form with fields for email, password, and confirm password.\nUser authentication is implemented using Firebase authentication for user signup.\nUser authentication is implemented using Firebase authentication for sign-in and sign-out functionality."
+    },
+    "database": {
+      "present": true,
+      "details": "\nFirebase Firestore is used for database operations in noteSlice.js."
+    },
+    "caching": {
+      "present": false,
+      "details": "Not found"
+    },
+    "storage": {
+      "present": true,
+      "details": "Firebase Firestore is used for storing notes data.\nData storage is implemented using Firebase Firestore in noteSlice.js."
+    },
+    "microservices": {
+      "present": false,
+      "details": "Not found"
+    }
   }
 }
