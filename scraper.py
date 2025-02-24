@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import json
 import sys
 import argparse
+import os
 
 class GitIngestScraper:
     def __init__(self, owner_repo):
@@ -85,6 +86,10 @@ class GitIngestScraper:
         return '\n'.join(filtered_lines)
 
 if __name__ == "__main__":
+    # Create temp directory if it doesn't exist
+    output_dir = "temp"
+    os.makedirs(output_dir, exist_ok=True)
+
     parser = argparse.ArgumentParser(description='Scrape repository data from GitIngest')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('repo', nargs='?', help='Single repository in format owner/repo')
@@ -112,8 +117,8 @@ if __name__ == "__main__":
             print(f"Failed to fetch repository data for {repo}")
             continue
 
-        # Create repo-specific filenames
-        base_filename = repo.replace('/', '_')
+        # Create repo-specific filenames with temp directory
+        base_filename = os.path.join(output_dir, repo.replace('/', '_'))
 
         # Save directory structure
         with open(f'{base_filename}_directory_structure.txt', 'w', encoding='utf-8') as f:
