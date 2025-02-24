@@ -47,28 +47,43 @@ class FeatureAnalyzer:
             }
         }
 
+        # Add cache for API responses
+        self.analysis_cache = {}
+
+        # Configure analysis settings
+        self.max_tokens = 4000  # Maximum tokens per API call
+        self.model = "gpt-3.5-turbo"  # Use cheaper model
+        self.chunk_size = 12000  # Characters per chunk
+
     def chunk_code_by_files(self, code_content: str) -> List[str]:
-        """Split code content into chunks based on file headers."""
+        """Split code content into chunks based on file headers and size limits."""
         print("\n[DEBUG] Chunking code content...")
         chunks = []
         current_chunk = []
+        current_size = 0
 
         lines = code_content.split('\n')
         for line_num, line in enumerate(lines):
-            current_chunk.append(line)
+            line_size = len(line)
 
-            # When we hit a file header, start a new chunk
-            if line.startswith('=' * 48):
-                # Only create a chunk if it has meaningful content
-                if len(current_chunk) > 4:  # More than just header lines
-                    chunks.append('\n'.join(current_chunk))
-                    print(f"[CHUNK] Created chunk {len(chunks)} at line {line_num}")
-                current_chunk = [line]
+            # If adding this line would exceed chunk size, start a new chunk
+            if current_size + line_size > self.chunk_size and current_chunk:
+                chunks.append('\n'.join(current_chunk))
+                current_chunk = []
+                current_size = 0
+
+            current_chunk.append(line)
+            current_size += line_size
+
+            # When we hit a file header, consider starting a new chunk
+            if line.startswith('=' * 48) and current_size > self.chunk_size / 2:
+                chunks.append('\n'.join(current_chunk))
+                current_chunk = []
+                current_size = 0
 
         # Add the last chunk if it exists
         if current_chunk:
             chunks.append('\n'.join(current_chunk))
-            print(f"[CHUNK] Final chunk created with {len(current_chunk)} lines")
 
         print(f"[DEBUG] Created {len(chunks)} total chunks")
         return chunks
@@ -104,6 +119,13 @@ Return your analysis in this exact JSON format:
 }"""
 
         for chunk_num, chunk in enumerate(code_chunks, 1):
+            # Check cache first
+            cache_key = hash(chunk)
+            if cache_key in self.analysis_cache:
+                print(f"[CHUNK {chunk_num}] Using cached analysis")
+                chunk_analysis = self.analysis_cache[cache_key]
+                continue
+
             chunk_analysis = None
             try:
                 print(f"\n[CHUNK {chunk_num}] Processing chunk ({len(chunk)} characters)")
@@ -116,7 +138,7 @@ Return your analysis in this exact JSON format:
                 print(f"[CHUNK {chunk_num}] Sending to OpenAI API...")
 
                 response = self.client.chat.completions.create(
-                    model="gpt-4-1106-preview",
+                    model=self.model,  # Use cheaper model
                     messages=[
                         {
                             "role": "system",
@@ -124,7 +146,7 @@ Return your analysis in this exact JSON format:
                         },
                         {"role": "user", "content": f"{prompt}\n\nCode to analyze:\n{chunk}"}
                     ],
-                    temperature=0,  # Set to 0 for more consistent output
+                    temperature=0,
                     response_format={"type": "json_object"}
                 )
 
@@ -165,6 +187,9 @@ Return your analysis in this exact JSON format:
                         combined_analysis[feature]["details"].append(
                             chunk_analysis[feature]["details"]
                         )
+
+                # Cache the successful response
+                self.analysis_cache[cache_key] = chunk_analysis
 
             except json.JSONDecodeError as e:
                 print(f"[CHUNK {chunk_num}] JSON DECODE ERROR: {str(e)}")
