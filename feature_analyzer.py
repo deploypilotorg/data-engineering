@@ -294,105 +294,90 @@ Return your analysis in this exact JSON format:
         return found_features
 
     def determine_deployment_platform(self, directory_structure, code_content, repo):
-        # Direct repo name matches first
-        repo_lower = repo.lower()
-        if "/streamlit" in repo_lower or repo_lower.startswith("streamlit/"):
+        def has_file(filename):
+            return filename.lower() in directory_structure.lower()
+        
+        def has_content(text):
+            return text.lower() in code_content.lower()
+        
+        # Streamlit - check both repo name and content
+        if "/streamlit" in repo.lower() or has_content("streamlit"):
             return "Streamlit"
-        
-        content = (directory_structure + "\n" + code_content).lower()
-        
-        # Strong indicators (if found, immediately return)
-        strong_indicators = {
-            "Vercel": [
-                "vercel.json",
-                ".vercel/",
-                "vercel deploy",
-                "next.config.js"
-            ],
-            "Firebase": [
-                "firebase.json",
-                ".firebaserc",
-                "firebase.initializeApp",
-                "firebase-admin"
-            ],
-            "AWS": [
-                "aws-config",
-                "cloudformation",
-                "elasticbeanstalk",
-                "serverless.yml",
-                "amplify"
-            ],
-            "GitHub Pages": [
-                "github.io",
-                "gh-pages",
-                "_config.yml"
-            ],
-            "Netlify": [
-                "netlify.toml",
-                ".netlify",
-                "netlify deploy"
-            ],
-            "Digital Ocean": [
-                "digitalocean.yaml",
-                "do:kubernetes",
-                "doctl"
-            ],
-            "Google Cloud": [
-                "app.yaml",
-                "gcloud",
-                "appengine",
-                "cloud.google"
-            ],
-            "NPM": [
-                '"private": false' if "package.json" in content else None
-            ],
-            "Heroku": [
-                "Procfile",
-                "heroku.yml",
-                "heroku deploy"
-            ]
-        }
 
-        for platform, indicators in strong_indicators.items():
-            for indicator in indicators:
-                if indicator and indicator in content:
-                    return platform
-
-        # If no strong indicators found, check deployment URLs
-        if ".vercel.app" in content or "vercel.com" in content:
+        # Check for Vercel (strengthened checks)
+        if (has_file("vercel.json") or 
+            has_file(".vercel") or 
+            has_content(".vercel.app") or
+            has_content("vercel deploy") or
+            has_content("vercel.com") or
+            (has_file("next.config.js") and not has_content("aws")) or
+            (has_file("package.json") and has_content("vercel")) or
+            (has_file("package.json") and has_content("next.js"))):
             return "Vercel"
-        if ".firebaseapp.com" in content or ".web.app" in content:
+
+        # Check for Firebase (strengthened checks)
+        if (has_file("firebase.json") or
+            has_file(".firebaserc") or
+            has_content("firebase.initializeApp") or
+            has_content(".firebaseapp.com") or
+            has_content(".web.app") or
+            (has_content("firebase") and has_content("config")) or
+            (has_file("package.json") and has_content("firebase")) or
+            has_content("firebase deploy")):
             return "Firebase"
-        if ".github.io" in content:
+
+        # Rest of the checks remain the same...
+        if (has_file("serverless.yml") or
+            has_file("amplify.yml") or
+            has_file("buildspec.yml") or
+            has_file("cloudformation.yml") or
+            has_file("elastic-beanstalk") or
+            (has_file("docker-compose.yml") and has_content("aws-sdk"))):
+            return "AWS"
+
+        if ((has_file("_config.yml") and has_content("github.io")) or 
+            (has_content(".github.io") and has_content("gh-pages"))):
             return "GitHub Pages"
-        if ".netlify.app" in content:
-            return "Netlify"
-        if ".herokuapp.com" in content:
-            return "Heroku"
-        if ".digitalocean.app" in content:
-            return "Digital Ocean"
-        if "appspot.com" in content:
-            return "Google Cloud"
-        if ".aws.amazon.com" in content:
-            return "AWS"
 
-        # Default fallback based on common patterns
-        if "vercel" in content or "next.js" in content:
-            return "Vercel"
-        if "firebase" in content:
-            return "Firebase"
-        if "aws" in content or "amazon" in content:
-            return "AWS"
-        if "netlify" in content:
+        if (has_file("netlify.toml") or
+            has_file(".netlify") or
+            has_content(".netlify.app")):
             return "Netlify"
-        if "heroku" in content:
-            return "Heroku"
-        if "gcloud" in content or "google cloud" in content:
-            return "Google Cloud"
-        if "digitalocean" in content:
+
+        if (has_file("do.yaml") or
+            (has_content("digitalocean") and has_content("deploy"))):
             return "Digital Ocean"
+
+        if ((has_file("app.yaml") and has_content("google")) or 
+            has_content("appspot.com")):
+            return "Google Cloud"
+
+        if (has_file("package.json") and 
+            has_content('"private": false') and 
+            has_content("npm publish")):
+            return "NPM"
+
+        if has_file("Procfile") or has_file("heroku.yml"):
+            return "Heroku"
+
+        if has_file("sandbox.config.json"):
+            return "CodeSandbox"
+        if has_file(".stackblitzrc"):
+            return "Stackblitz"
+        if has_file(".replit"):
+            return "Replit"
+        if has_file(".glitch-assets"):
+            return "Glitch"
+
+        # If no clear deployment indicators but has package.json, check for specific frameworks
+        if has_file("package.json"):
+            if has_content("next") or has_content("vercel"):
+                return "Vercel"
+            if has_content("firebase"):
+                return "Firebase"
 
         return "Unknown"
+
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser(description='Analyze repository features')
