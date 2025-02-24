@@ -378,6 +378,57 @@ Return your analysis in this exact JSON format:
 
         return "Unknown"
 
+    def determine_framework(self, directory_structure, code_content):
+        def has_file(filename):
+            return filename.lower() in directory_structure.lower()
+        
+        def has_content(text):
+            return text.lower() in code_content.lower()
+
+        # Framework detection rules
+        if has_file("next.config.js"):
+            return "Next.js"
+        if has_file("nuxt.config.js"):
+            return "Nuxt.js"
+        if has_file("gatsby-config.js"):
+            return "Gatsby"
+        if has_file("angular.json"):
+            return "Angular"
+        if has_file("vue.config.js") or has_content("createapp") and has_content("vue"):
+            return "Vue"
+        if has_file("svelte.config.js"):
+            return "Svelte"
+        if has_file("remix.config.js"):
+            return "Remix"
+        if has_file("astro.config.mjs"):
+            return "Astro"
+        if has_content("streamlit") and has_content("st."):
+            return "Streamlit"
+        if has_file("django"):
+            return "Django"
+        if has_file("flask"):
+            return "Flask"
+        if has_file("express"):
+            return "Express"
+        if has_file("spring"):
+            return "Spring"
+        if has_file("laravel"):
+            return "Laravel"
+        if has_file("rails"):
+            return "Ruby on Rails"
+        
+        # Check package.json for dependencies
+        if has_file("package.json"):
+            content = code_content.lower()
+            if '"react"' in content and not any(f in content for f in ["next", "gatsby", "remix"]):
+                return "React"
+            if '"@angular' in content:
+                return "Angular"
+            if '"vue"' in content:
+                return "Vue"
+        
+        return "Unknown"
+
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser(description='Analyze repository features')

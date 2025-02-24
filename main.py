@@ -68,7 +68,7 @@ def analyze_repositories(repo_data, output_dir):
         "sensitive_data",
         "external_apis"
     ] # Existing features
-    csv_headers = ["repository", "deployment"] + infrastructure_features + code_features
+    csv_headers = ["repository", "deployment", "framework"] + infrastructure_features + code_features
     
     csv_path = os.path.join(output_dir, "analysis_results.csv")
     with open(csv_path, 'w', newline='') as csvfile:
@@ -106,6 +106,9 @@ def analyze_repositories(repo_data, output_dir):
                 
                 for feature in code_features:
                     row_data[feature] = 1 if code_results.get(feature, {}).get("present", False) else 0
+                
+                framework = analyzer.determine_framework(directory_structure, code_content)
+                row_data["framework"] = framework
                 
                 writer.writerow(row_data)
                 print(f"Added analysis results for {repo} (Detected deployment: {deployment})")
