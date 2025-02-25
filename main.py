@@ -123,13 +123,16 @@ def process_repositories(input_file):
     output_dir = "temp"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Read only repository names from file
+    # Read repository names and deployment info from file
     repo_data = []
     with open(input_file, 'r') as f:
         for line in f:
             if line.strip():
-                repo = line.strip().split('|')[0].strip()
-                repo_data.append((repo, None))  # Initialize deployment as None
+                parts = line.strip().split('|')
+                if len(parts) == 2:
+                    repo = parts[0].strip()
+                    deployment = parts[1].strip()
+                    repo_data.append((repo, deployment))  # Store both repo and deployment
 
     # Phase 1: Scrape all repositories
     successful_repos = scrape_repositories(repo_data, output_dir)

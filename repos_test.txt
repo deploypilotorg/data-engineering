@@ -1,7 +1,6 @@
-haxybaxy/portfolio 
-IsraelChidera/focus-app 
-jitsi/jitsi-meet 
-jrieke/traingenerator 
-anuraghazra/github-readme-stats 
-excalidraw/excalidraw 
-supabase/supabase 
+haxybaxy/portfolio | Vercel
+IsraelChidera/focus-app | Firebase
+jitsi/jitsi-meet | Vercel
+jrieke/traingenerator | Streamlit
+anuraghazra/github-readme-stats | Vercel
+excalidraw/excalidraw | Vercel
