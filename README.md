@@ -1,95 +1,84 @@
 # GitHub Repo & User CI/CD Analyzer
 
 ## Overview
-This script performs a comprehensive analysis of:
-
-1. A single target GitHub repository, extracting data such as commits, branches, tags, CI/CD configurations, frameworks, and more.
-2. All public repositories belonging to the same user, aggregating CI/CD services (Azure, AWS, GCP) used across their repositories.
+This repository contains a Python script that analyzes GitHub repositories and their CI/CD configurations. It scrapes data from specified repositories and generates detailed analysis reports.
 
 ## Features
 
-### Repository Analysis
-Retrieves and stores:
-- **Basic Repository Details**: Owner, name, primary languages.
-- **Commits**: SHA, author info, date, commit message.
-- **Branches**: Name, latest commit.
-- **Tags**: Name, commit reference.
-- **Pull Requests**: Open and closed PRs.
-- **Collaborators & Contributors**.
-- **Framework / Dependency Files**: Extracts files like `package.json`, `requirements.txt`, etc.
-- **CI/CD Configurations**: Detects `.yml`, `.yaml`, and `.bicep` files.
-- **README.md Content**.
+### Repository Scraping
+- Scrapes repository data from GitIngest, including:
+  - Directory structure
+  - Code content
+- Supports scraping multiple repositories from a file or a single repository.
 
-Each category is stored in its own CSV file inside the `mini-csvs/` folder.
+### Analysis
+- Analyzes the scraped data to determine:
+  - Deployment platforms (e.g., AWS, Vercel, Firebase)
+  - Infrastructure features (e.g., CI/CD, containerization)
+  - Code features (e.g., authentication, database usage)
 
-### User Public Repo CI/CD Summaries
-- Retrieves all public repositories for the owner of the target repository.
-- Scans each repository for CI/CD files (`.yml`, `.yaml`, `.bicep`).
-- Detects mentions of **Azure**, **AWS**, or **GCP** in those files.
-- Aggregates a count of how often each cloud provider is referenced.
-- Stores the summary in `mini-csvs/user_ci_cd_services_summary.csv`.
-
-### Unified CSV Output
-- Merges all CSV files from `mini-csvs/` into a single consolidated file: `all_data_combined.csv`.
-- Standardized row structure:
-  - `source_csv`: Originating CSV file.
-  - `row_index`: Row number in the original file.
-  - `column_name`: Field name in the original CSV.
-  - `value`: Cell content.
+### Output
+- Generates CSV files containing:
+  - Analysis results for each repository.
+  - Detailed infrastructure and code analysis.
 
 ## Requirements
 - **Python 3.7+**
-- **Requests library** (for GitHub API calls)
-- **Bash** (for running commands)
+- **Selenium** for web scraping.
+- **BeautifulSoup** for HTML parsing.
+- **OpenAI API** for advanced code analysis.
 
 Install dependencies with:
 ```bash
-pip install requests
+pip install -r requirements.txt
 ```
 
-### (Optional) GitHub Personal Access Token
-To analyze private repositories or bypass API rate limits, set up a personal access token:
-```bash
-export GITHUB_TOKEN="ghp_XXXXXXXXXXXXXXXXXXXXXXXX"
-```
+### (Optional) OpenAI API Key
+To enable advanced code analysis, set up an OpenAI API key:
+
 
 ## Usage
 
 1. **Clone or download** this repository.
-2. **Install dependencies** (`requests`).
-3. **Run the script**, specifying the target repository:
+2. **Install dependencies**.
+3. **Run the script**, specifying the input file containing repository names:
 
 ```bash
-python script.py <github_repo_url_or_owner/repo>
+python main.py repos.txt
 ```
 
-### Examples:
-```bash
-python script.py https://github.com/octocat/Hello-World
-python script.py octocat/Hello-World
-```
+### Example Input File (`repos.txt`):
+
+haxybaxy/portfolio | Vercel
+IsraelChidera/focus-app | Firebase
+jitsi/jitsi-meet | Vercelhaxybaxy/portfolio | Vercel
+IsraelChidera/focus-app | Firebase
+jitsi/jitsi-meet | Vercel
 
 ## Script Workflow
 
-1. **Initial Input:** You provide a GitHub repository reference (owner/repo or full URL).
-2. **Single-Repo Analysis:**
-   - Fetches repository details via the GitHub API (v3).
-   - Saves extracted data as CSV files (`commits.csv`, `branches.csv`, `tags.csv`, etc.) inside `mini-csvs/`.
-3. **User Public Repo Analysis:**
-   - Identifies the GitHub user who owns the target repository.
-   - Retrieves all their public repositories.
-   - Scans each repo for `.yml`, `.yaml`, and `.bicep` files.
-   - Checks for mentions of "azure", "aws", or "gcp".
-   - Stores aggregated CI/CD usage in `mini-csvs/user_ci_cd_services_summary.csv`.
-4. **Data Consolidation:**
-   - Merges all `mini-csvs/` CSV files into `all_data_combined.csv`.
-   - Standardized format for easier analysis.
+1. **Scraping Phase**:
+   - The script reads repository names from the input file.
+   - It scrapes data for each repository using the `GitIngestScraper` class.
+
+2. **Analysis Phase**:
+   - The script analyzes the scraped data using the `FeatureAnalyzer` class.
+   - It determines the deployment platform and identifies key features.
+
+3. **Output Generation**:
+   - The results are saved in a temporary directory as CSV files.
+   - A summary of the analysis is printed to the console.
 
 ## Output Files
 The script generates:
+- **CSV files** in the `temp` directory containing:
+  - `analysis_results.csv`: Analysis results for each repository.
+- **JSON files** with detailed analysis results for each repository.
 
-- **`mini-csvs/` folder** containing:
-  - `repo_details.csv`, `commits.csv`, `branches.csv`, `tags.csv`, `pull_requests.csv`, etc.
-  - `user_ci_cd_services_summary.csv` (counts of Azure, AWS, and GCP references across public repos).
-- **`all_data_combined.csv`**: A merged file consolidating all extracted data.
+## Contributing
+Feel free to submit issues or pull requests to improve the functionality of this analyzer.
+
+
+
+
 
