@@ -2,8 +2,8 @@ import csv
 import os
 import sys
 import argparse
-from src.scraper import GitIngestScraper
-from src.feature_analyzer import FeatureAnalyzer
+from scraper import GitIngestScraper
+from feature_analyzer import FeatureAnalyzer
 
 def scrape_repositories(repo_data, output_dir):
     print("\n=== Phase 1: Scraping Repositories ===")
