@@ -14,7 +14,7 @@ Welcome to our GitHub Repository & CI/CD Analysis Tool! This powerful Python-bas
   - Infrastructure as Code (IaC) files
   - Package and dependency management files
 
-### 🛠️ Advanced Feature Detection
+### Advanced Feature Detection
 - **Deployment Platform Identification**:
   - AWS (CloudFormation, SAM, CDK)
   - Vercel
