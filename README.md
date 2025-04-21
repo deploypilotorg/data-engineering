@@ -4,9 +4,9 @@
 
 Welcome to our GitHub Repository & CI/CD Analysis Tool! This powerful Python-based solution helps you analyze GitHub repositories and their CI/CD configurations with ease. Whether you're a developer, DevOps engineer, or tech lead, this tool provides valuable insights into repository structures, deployment patterns, and infrastructure setups.
 
-## ✨ Key Features
+##  Key Features
 
-### 🔍 Intelligent Repository Analysis
+###  Intelligent Repository Analysis
 - **Comprehensive Data Collection**: Scrapes and analyzes repository data including:
   - Complete directory structures
   - Code content and patterns
