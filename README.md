@@ -113,7 +113,7 @@ jitsi/jitsi-meet | Vercel
 - Generates JSON files with detailed analysis
 - Provides console output for quick insights
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 data-engineering-2/
@@ -126,7 +126,7 @@ data-engineering-2/
 └── README.md            # This documentation
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how you can help:
 
@@ -137,11 +137,8 @@ We welcome contributions! Here's how you can help:
 
 Please ensure your code follows our style guidelines and includes appropriate tests.
 
-## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - OpenAI for their powerful API
 - The open-source community for their invaluable tools
